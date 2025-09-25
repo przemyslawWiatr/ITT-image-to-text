@@ -31,7 +31,7 @@ impl ArgumentParser {
         for argument in arguments {
             // define options without additional arguments
             match argument.as_str() {
-                "--color" => colored = true,
+                "--colored" => colored = true,
                 "-c" => colored = true,
                 "--stretch" => scaling_type = ScalingType::Stretch,
                 "--preserve" => scaling_type = ScalingType::PreserveRatio,
