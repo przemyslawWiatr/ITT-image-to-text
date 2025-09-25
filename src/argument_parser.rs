@@ -33,6 +33,7 @@ impl ArgumentParser {
             match argument.as_str() {
                 "--colored" => colored = true,
                 "-c" => colored = true,
+                "--mono" => colored = false,
                 "--stretch" => scaling_type = ScalingType::Stretch,
                 "--preserve" => scaling_type = ScalingType::PreserveRatio,
                 _ => {}
