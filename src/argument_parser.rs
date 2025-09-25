@@ -4,19 +4,26 @@ use std::{
     fmt::{Debug, Display},
 };
 
+use crate::image_converter::ScalingType;
+
 pub struct ArgumentParser {
     pub image_path: String,
     // list of characters that will be used to convert the image, going from darkest (left) to brightest pixel range value
     pub character_palette: Vec<char>,
     pub colored: bool,
+    pub width: u16,
+    pub height: u16,
+    pub scaling_type: ScalingType,
 }
 
 impl ArgumentParser {
-    pub fn new() -> Result<Self, ImagePathError> {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
         let mut image_path: Option<String> = None;
         let mut character_palette: Vec<char> =
             vec![' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'];
         let mut colored: bool = false;
+        let (mut width, mut height): (u16, u16) = termion::terminal_size()?;
+        let mut scaling_type: ScalingType = ScalingType::PreserveRatio;
 
         let arguments: Vec<String> = args().collect();
         let mut previous_argument = String::new();
@@ -26,13 +33,19 @@ impl ArgumentParser {
             match argument.as_str() {
                 "--color" => colored = true,
                 "-c" => colored = true,
+                "--stretch" => scaling_type = ScalingType::Stretch,
+                "--preserve" => scaling_type = ScalingType::PreserveRatio,
                 _ => {}
             }
             // define options followed by an argument
             match previous_argument.as_str() {
                 "--image" => image_path = Some(argument.clone()),
                 "-i" => image_path = Some(argument.clone()),
-                "--character-palette" => character_palette = argument.clone().chars().collect(),
+                "--character-palette" => character_palette = argument.chars().collect(),
+                "--width" => width = argument.parse()?,
+                "-w" => width = argument.parse()?,
+                "--height" => height = argument.parse()?,
+                "-h" => height = argument.parse()?,
                 _ => {}
             }
 
@@ -44,8 +57,11 @@ impl ArgumentParser {
                 image_path: path,
                 character_palette,
                 colored,
+                width,
+                height,
+                scaling_type,
             }),
-            None => Err(ImagePathError),
+            None => Err(Box::new(ImagePathError)),
         };
     }
 }
